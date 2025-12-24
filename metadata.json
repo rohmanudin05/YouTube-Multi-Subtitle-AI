@@ -1,0 +1,7 @@
+{
+  "name": "BY ROHMANUDIN05 - YouTube Multi-Subtitle AI",
+  "description": "Professional 3-in-1 YouTube content generator for subtitles, titles, and SEO descriptions optimized for global RPM, featuring strategic niche analysis and ZIP export.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
