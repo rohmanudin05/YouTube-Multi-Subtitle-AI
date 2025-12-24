@@ -7,7 +7,6 @@ export class GeminiService {
   private ai: GoogleGenAI;
 
   constructor() {
-    // Initializing GoogleGenAI with process.env.API_KEY directly as per SDK guidelines.
     this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   }
 
@@ -16,20 +15,23 @@ export class GeminiService {
     masterTitle: string,
     masterDesc: string,
     targetCountries: { name: string, language: string }[],
+    duration: number,
     fileData?: { data: string, mimeType: string }
   ): Promise<GeneratedContent[]> {
     const prompt = `
-      SOURCE CONTENT: ${input}
+      SOURCE CONTENT / SCRIPT: ${input}
+      VIDEO DURATION: ${duration} minutes
       MASTER TITLE: ${masterTitle}
       MASTER DESCRIPTION: ${masterDesc}
       TARGET COUNTRIES: ${targetCountries.map(c => `${c.name} (${c.language})`).join(', ')}
       
-      Perform Layer 1 Strategic Analysis for these countries based on YouTube RPM data and local trends.
-      Then generate the Layer 2 Optimizations (Titles, Descriptions, Subtitles) as requested.
-      Ensure the subtitle timing covers the whole content duration appropriately.
+      TASK:
+      1. Perform Layer 1 Strategic Analysis.
+      2. Generate Layer 2 Content (3 Title Variations and Template-based Description).
+      3. Generate Layer 3 Subtitles (.srt format) covering the full ${duration} minutes. 
+      Remember the mandatory credit line at 0:45.
     `;
 
-    // Prepare content parts for the generateContent call.
     const contents: any[] = [{ text: prompt }];
     if (fileData) {
       contents.unshift({
@@ -40,9 +42,8 @@ export class GeminiService {
       });
     }
 
-    // Call generateContent using the recommended model and configuration.
     const response = await this.ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-3-pro-preview",
       contents: { parts: contents },
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
@@ -80,12 +81,12 @@ export class GeminiService {
     });
 
     try {
-      // Extract generated text from response using the .text property as per guidelines.
-      const data = JSON.parse(response.text || '[]');
-      return data;
+      const text = response.text;
+      if (!text) throw new Error("Empty response from AI");
+      return JSON.parse(text);
     } catch (e) {
       console.error("Failed to parse Gemini response:", e);
-      throw new Error("Invalid response format from AI. Please try again.");
+      throw new Error("Invalid response format from AI. Please reduce number of target countries or simplify the script.");
     }
   }
 }

@@ -1,6 +1,5 @@
 
 export interface Country {
-  // Added 'id' property to match data in constants.ts
   id: string;
   code: string;
   name: string;
@@ -9,6 +8,7 @@ export interface Country {
 }
 
 export interface ExtendedCountry extends Country {
+  langName: string;
   tier: 'S' | 'A' | 'B' | 'C' | 'D';
   continent: string;
   rpmValue: number;
